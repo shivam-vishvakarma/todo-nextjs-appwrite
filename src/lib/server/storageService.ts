@@ -1,4 +1,4 @@
-import { ID, Permission, Role, Storage } from "appwrite";
+import { ID, Storage } from "appwrite";
 import { client } from "./appwrite";
 
 class StorageService{
@@ -15,10 +15,7 @@ class StorageService{
     }
 
     async uploadFile(file: File, user: string){
-        return await this.storage.createFile(this.userMediaBucketId, "profile/"+ID.unique(), file, [
-            Permission.delete(Role.user(user)),
-            Permission.update(Role.user(user))
-        ]);
+        return await this.storage.createFile(this.userMediaBucketId, ID.unique(), file);
     }
 
     getFile(fileId: string){

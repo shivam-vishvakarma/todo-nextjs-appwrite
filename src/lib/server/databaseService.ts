@@ -1,6 +1,7 @@
 import { Databases, ID, Query } from "appwrite";
 import {client} from "./appwrite";
 import storageService from "./storageService";
+import authService from "./authService";
 
 export class Database{
     database: Databases;
@@ -25,19 +26,27 @@ export class Database{
     // user related functions
 
     async createUser(user: string){
+        if(!user){
+            return Error("User is required to create a user document");
+        }
+        const userDoc = await this.getUser(user);
+        if(userDoc){
+            return userDoc;
+        }
         return await this.database.createDocument(this.databaseId, this.userCollectionId, ID.unique(), {
             user: user,
         });
     }
 
     async getUser(user: string){
-        return await this.database.listDocuments(this.databaseId, this.userCollectionId,[Query.equal("user", user)]);
+        return (await this.database.listDocuments(this.databaseId, this.userCollectionId,[Query.equal("user", user)]))?.documents[0];
     }
 
     async getUserProfile(user: string){
-        let userDoc = (await this.getUser(user))?.documents[0];
+        let userDoc = await this.getUser(user);
         if(!userDoc){
-            userDoc = await this.createUser(user);
+            const user = await authService.getUser();
+            this.createUser(user.$id);
         }
         if(userDoc?.coverPic){
             userDoc.coverPic = storageService.getFile(userDoc.coverPic);
@@ -60,14 +69,14 @@ export class Database{
     async updateCoverPhoto(user: string, coverPhoto: File){
         const fileId = await storageService.uploadFile(coverPhoto, user);
         return await this.database.updateDocument(this.databaseId, this.userCollectionId, user, {
-            coverPic: fileId,
+            coverPic: fileId.$id,
         })
     }
 
     async updateProfilePhoto(user: string, profilePhoto: File){
         const fileId = await storageService.uploadFile(profilePhoto, user);
         return await this.database.updateDocument(this.databaseId, this.userCollectionId, user, {
-            profilePic: fileId,
+            profilePic: fileId.$id,
         })
     }
 

@@ -13,7 +13,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     if (!user && !loading) {
       router.push("/login");
     }
-  }, [user]);
+  }, [user, loading]);
   return (
     <main className="w-full">
       <section className="max-w-screen-xl mx-auto pt-20">
