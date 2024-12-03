@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 
 export type Type = "success" | "error" | "info";
 
@@ -25,6 +25,15 @@ export const AlertProvider = ({ children }: { children: React.ReactNode }) => {
   const closeAlert = () => {
     setMessage("");
   };
+
+  useEffect(() => {
+    if (message) {
+      const timer = setTimeout(() => {
+        setMessage("");
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [message]);
 
   return (
     <AlertContext.Provider value={{ message, type, callAlert, closeAlert }}>

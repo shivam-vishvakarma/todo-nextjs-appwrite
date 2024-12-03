@@ -1,5 +1,6 @@
 "use client";
 
+import Loader from "@/components/Loader";
 import { useAlert } from "@/context/AlertContext";
 import { useAuth } from "@/context/AuthContext";
 import databaseService from "@/lib/server/databaseService";
@@ -17,6 +18,7 @@ type ProfileFormData = {
 
 export default function EditProfile() {
   const { user, loading } = useAuth();
+  const [showLoader, setShowLoader] = useState(true);
   const { callAlert } = useAlert();
   const router = useRouter();
   const [profile, setProfile] = useState<Models.Document>(
@@ -39,12 +41,15 @@ export default function EditProfile() {
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    setShowLoader(true);
     e.preventDefault();
     try {
       if (!profile.$id) {
+        setShowLoader(false);
         return callAlert("Something went wrong", "error");
       }
       if (checkChanges()) {
+        setShowLoader(false);
         return callAlert("No changes made", "info");
       }
       const res = await databaseService.updateUser(
@@ -55,12 +60,15 @@ export default function EditProfile() {
         formData.dob || ""
       );
       if (!res.$id) {
+        setShowLoader(false);
         return callAlert("Something went wrong", "error");
       }
       callAlert("Profile Updated Successfully", "success");
+      setShowLoader(false);
       return router.push("/dashboard/profile");
     } catch (error) {
       console.error(error);
+      setShowLoader(false);
       return callAlert(`Something went wrong Error: ${error}`, "error");
     }
   };
@@ -78,22 +86,27 @@ export default function EditProfile() {
   };
 
   const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    setShowLoader(true);
     const file = e.target.files?.[0];
     if (!file || !profile.$id) {
+      setShowLoader(false);
       return callAlert("Something went wrong", "error");
     }
     try {
       const res = await databaseService.updateCoverPhoto(profile.$id, file);
       if (!res.$id) {
+        setShowLoader(false);
         return callAlert("Something went wrong", "error");
       }
       setProfile((prev) => ({
         ...prev,
         coverPic: storageService.getFile(res.coverPic),
       }));
+      setShowLoader(false);
       return callAlert("Cover Picture Updated", "success");
     } catch (error) {
       console.error(error);
+      setShowLoader(false);
       return callAlert(`Something went wrong Error: ${error}`, "error");
     }
   };
@@ -101,22 +114,27 @@ export default function EditProfile() {
   const handleProfileUpload = async (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
+    setShowLoader(true);
     const file = e.target.files?.[0];
     if (!file || !profile.$id) {
+      setShowLoader(false);
       return callAlert("Something went wrong", "error");
     }
     try {
       const res = await databaseService.updateProfilePhoto(profile.$id, file);
       if (!res.$id) {
+        setShowLoader(false);
         return callAlert("Something went wrong", "error");
       }
       setProfile((prev) => ({
         ...prev,
         profilePic: storageService.getFile(res.profilePic),
       }));
+      setShowLoader(false);
       return callAlert("Profile Picture Updated", "success");
     } catch (error) {
       console.error(error);
+      setShowLoader(false);
       return callAlert(`Something went wrong Error: ${error}`, "error");
     }
   };
@@ -125,6 +143,7 @@ export default function EditProfile() {
     if (user && !loading) {
       databaseService.getUserProfile(user.$id).then((res) => {
         setProfile(res);
+        setShowLoader(false);
       });
     }
   }, [user, loading]);
@@ -137,6 +156,8 @@ export default function EditProfile() {
       dob: profile?.dob,
     });
   }, [profile, user]);
+
+  if (showLoader) <Loader />;
 
   return (
     <section className="py-10 my-auto dark:bg-gray-900">

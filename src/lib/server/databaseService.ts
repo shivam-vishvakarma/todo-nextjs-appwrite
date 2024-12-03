@@ -1,7 +1,15 @@
-import { Databases, ID, Query } from "appwrite";
+import { Databases, ID, Models, Query } from "appwrite";
 import {client} from "./appwrite";
 import storageService from "./storageService";
 import authService from "./authService";
+
+export type ToDoItem = Models.Document & {
+    title: string;
+    description: string;
+    deadline: string;
+    status: "ongoing" | "pending" | "rejected" | "completed" | "missed";
+    userId: string;
+}
 
 export class Database{
     database: Databases;
@@ -85,16 +93,48 @@ export class Database{
     }
 
     // to-do related functions
-    async createToDoItem(userId: string, title: string, description: string){
+    async createToDoItem(userId: string, title: string, description: string, deadline: string){
         return this.database.createDocument(this.databaseId, this.toDoCollectionId, ID.unique(), {
             userId,
             title,
             description,
+            deadline,
         });
     }
 
-    async getToDoItems(userId: string){}
-    async getToDoItem(userId: string, itemId: string){}
+    async getToDoItems(userId: string, status?: "ongoing" | "pending" | "rejected" | "completed" | "missed", page: number = 1, limit: number = 10){
+        const query = [Query.equal("userId", userId)];
+        if(status){
+            query.push(Query.equal("status", status));
+        }
+        if(page && limit){
+            query.push(Query.limit(limit));
+            query.push(Query.offset((page - 1) * limit));
+        }
+        return this.database.listDocuments(this.databaseId, this.toDoCollectionId, query);
+    }
+
+    async getToDoItem( itemId: string){
+        return this.database.getDocument(this.databaseId, this.toDoCollectionId, itemId);
+    }
+
+    async updateToDoItem(itemId: string, title: string, description: string, deadline: string){
+        return this.database.updateDocument(this.databaseId, this.toDoCollectionId, itemId, {
+            title,
+            description,
+            deadline,
+        });
+    }
+
+    async deleteToDoItem(itemId: string){
+        return this.database.deleteDocument(this.databaseId, this.toDoCollectionId, itemId);
+    }
+
+    async changeToDoItemStatus(itemId: string, status: "ongoing" | "pending" | "rejected" | "completed" | "missed"){
+        return this.database.updateDocument(this.databaseId, this.toDoCollectionId, itemId, {
+            status,
+        });
+    }
 }
 
 export default new Database();

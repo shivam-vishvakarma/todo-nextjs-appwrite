@@ -1,7 +1,6 @@
 "use client";
 
 import DashboardNav from "@/components/DashboardNav";
-import ToDoForm from "@/components/ToDoForm";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
@@ -25,7 +24,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <DashboardNav />
           </div>
           <div>{children}</div>
-          <ToDoForm />
         </section>
       </section>
     </main>

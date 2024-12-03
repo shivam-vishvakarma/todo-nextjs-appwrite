@@ -1,12 +1,13 @@
 "use client";
 
-import { createContext, useContext, useState } from "react";
+import { ToDoItem } from "@/lib/server/databaseService";
+import { createContext, useContext, useEffect, useState } from "react";
 
 type FormContextType = {
   isOpen: boolean;
   setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  todo: any;
-  setTodo: React.Dispatch<React.SetStateAction<any>>;
+  todo: ToDoItem | undefined;
+  setTodo: (todo: ToDoItem) => void;
 };
 
 const FormContext = createContext<FormContextType>({} as FormContextType);
@@ -14,7 +15,14 @@ export const useForm = () => useContext(FormContext);
 
 export const FormProvider = ({ children }: { children: React.ReactNode }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [todo, setTodo] = useState({});
+  const [todo, setTodo] = useState<ToDoItem | undefined>();
+
+  useEffect(() => {
+    if (isOpen === false) {
+      setTodo(undefined);
+      console.log("Form Data", todo);
+    }
+  }, [isOpen]);
   return (
     <FormContext.Provider
       value={{

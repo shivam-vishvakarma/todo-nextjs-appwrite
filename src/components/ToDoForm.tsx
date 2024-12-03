@@ -1,7 +1,11 @@
 "use client";
 
+import { useAlert } from "@/context/AlertContext";
+import { useAuth } from "@/context/AuthContext";
 import { useForm } from "@/context/FormContext";
-import { useState } from "react";
+import databaseService from "@/lib/server/databaseService";
+import { useRouter } from "next/navigation";
+import { TextareaHTMLAttributes, useEffect, useState } from "react";
 
 type FormData = {
   title: string;
@@ -11,22 +15,78 @@ type FormData = {
 
 export default function ToDoForm() {
   const { isOpen, setIsOpen, todo, setTodo } = useForm();
+  const { user } = useAuth();
+  const { callAlert } = useAlert();
+  const router = useRouter();
 
-  const [formData, setFormData] = useState<FormData>({} as FormData);
+  const [formData, setFormData] = useState<FormData>({
+    title: "",
+    deadline: "",
+    description: "",
+  });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log("Form Data", formData);
+  const handleChange = (
+    e:
+      | React.ChangeEvent<HTMLInputElement>
+      | React.ChangeEvent<HTMLTextAreaElement>
+  ) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
     });
+    console.log("Form Data", formData);
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log("Form Submitted", formData);
-    setIsOpen(false);
+    try {
+      if (!user?.$id) {
+        callAlert("User not found", "error");
+        return;
+      }
+      console.log("User", user);
+
+      const res = await databaseService.createToDoItem(
+        user?.$id,
+        formData.title,
+        formData.description,
+        formData.deadline
+      );
+      if (res) {
+        callAlert("To Do Added Successfully", "success");
+        setFormData({
+          title: "",
+          deadline: "",
+          description: "",
+        });
+        setIsOpen(false);
+      }
+    } catch (error) {
+      callAlert(`Failed to add to-do ${error}`, "error");
+    }
   };
+
+  useEffect(() => {
+    if (todo && todo.title) {
+      setFormData({
+        title: todo.title,
+        deadline: todo.deadline,
+        description: todo.description,
+      });
+      console.log("Todo", todo);
+    }
+  }, [todo]);
+
+  useEffect(() => {
+    if (isOpen === false) {
+      setFormData({
+        title: "",
+        deadline: "",
+        description: "",
+      });
+    }
+  }, [isOpen]);
+
   return (
     <div
       className={`${
@@ -89,9 +149,10 @@ export default function ToDoForm() {
 
             <input
               type="date"
+              name="deadline"
+              placeholder="Deadline"
               value={formData.deadline}
               onChange={handleChange}
-              placeholder="Deadline"
               className="block  mt-2 w-full rounded-lg border border-gray-200 bg-white px-5 py-2.5 text-gray-700 focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-900 dark:text-gray-300 dark:focus:border-blue-300"
             />
           </div>
@@ -106,10 +167,10 @@ export default function ToDoForm() {
               id="description"
               name="description"
               value={formData.description}
+              onChange={handleChange}
               rows={4}
               placeholder="Some description"
               className="w-full px-3 py-2 border rounded-md focus:outline-none focus:border-blue-500"
-              defaultValue={""}
             />
           </div>
           <button

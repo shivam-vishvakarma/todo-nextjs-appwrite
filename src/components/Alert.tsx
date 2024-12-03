@@ -1,6 +1,5 @@
 "use client";
 import { useAlert } from "@/context/AlertContext";
-import { use, useEffect } from "react";
 
 export default function Alert() {
   const { message, type, closeAlert } = useAlert();

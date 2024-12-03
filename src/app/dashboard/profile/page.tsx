@@ -1,6 +1,7 @@
 "use client";
 
 import EditPhoneOrEmail from "@/components/EditPhoneOrEmail";
+import Loader from "@/components/Loader";
 import { useAlert } from "@/context/AlertContext";
 import { useAuth } from "@/context/AuthContext";
 import authService from "@/lib/server/authService";
@@ -14,6 +15,7 @@ import { useEffect, useState } from "react";
 export default function Profile() {
   const { callAlert } = useAlert();
   const { user, loading } = useAuth();
+  const [showLoader, setShowLoader] = useState(true);
   const router = useRouter();
   const searchParams = useSearchParams();
   const [profile, setProfile] = useState<Models.Document>(
@@ -22,22 +24,27 @@ export default function Profile() {
   const [edit, setEdit] = useState<"phone" | "email" | null>(null);
 
   const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    setShowLoader(true);
     const file = e.target.files?.[0];
     if (!file || !profile.$id) {
+      setShowLoader(false);
       return callAlert("Something went wrong", "error");
     }
     try {
       const res = await databaseService.updateCoverPhoto(profile.$id, file);
       if (!res.$id) {
+        setShowLoader(false);
         return callAlert("Something went wrong", "error");
       }
       setProfile((prev) => ({
         ...prev,
         coverPic: storageService.getFile(res.coverPic),
       }));
+      setShowLoader(false);
       return callAlert("Cover Picture Updated", "success");
     } catch (error) {
       console.error(error);
+      setShowLoader(false);
       return callAlert(`Something went wrong Error: ${error}`, "error");
     }
   };
@@ -45,22 +52,27 @@ export default function Profile() {
   const handleProfileUpload = async (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
+    setShowLoader(true);
     const file = e.target.files?.[0];
     if (!file || !profile.$id) {
+      setShowLoader(false);
       return callAlert("Something went wrong", "error");
     }
     try {
       const res = await databaseService.updateProfilePhoto(profile.$id, file);
       if (!res.$id) {
+        setShowLoader(false);
         return callAlert("Something went wrong", "error");
       }
       setProfile((prev) => ({
         ...prev,
         profilePic: storageService.getFile(res.profilePic),
       }));
+      setShowLoader(false);
       return callAlert("Profile Picture Updated", "success");
     } catch (error) {
       console.error(error);
+      setShowLoader(false);
       return callAlert(`Something went wrong Error: ${error}`, "error");
     }
   };
@@ -74,22 +86,28 @@ export default function Profile() {
   };
 
   const createPhoneVerification = async () => {
+    setShowLoader(true);
     try {
       await authService.createPhoneVerification();
-      callAlert("Verification Sent", "success");
+      setShowLoader(false);
+      return callAlert("Verification Sent", "success");
     } catch (error) {
       console.error(error);
-      callAlert(`Something went wrong Error: ${error}`, "error");
+      setShowLoader(false);
+      return callAlert(`Something went wrong Error: ${error}`, "error");
     }
   };
 
   const createEmailVerification = async () => {
+    setShowLoader(true);
     try {
       await authService.createEmailVerification();
-      callAlert("Verification Sent", "success");
+      setShowLoader(false);
+      return callAlert("Verification Sent", "success");
     } catch (error) {
       console.error(error);
-      callAlert(`Something went wrong Error: ${error}`, "error");
+      setShowLoader(false);
+      return callAlert(`Something went wrong Error: ${error}`, "error");
     }
   };
 
@@ -124,6 +142,7 @@ export default function Profile() {
     if (user && !loading) {
       databaseService.getUserProfile(user.$id).then((res) => {
         setProfile(res);
+        setShowLoader(false);
       });
     }
   }, [user, loading]);
@@ -141,6 +160,11 @@ export default function Profile() {
     if (edit !== null) router.push("?edit=" + edit);
     else router.push("/dashboard/profile");
   }, [edit]);
+
+  if (loading || showLoader) {
+    return <Loader />;
+  }
+
   return (
     <section className="w-full overflow-hidden dark:bg-gray-900 mt-4">
       <div className="flex flex-col">
