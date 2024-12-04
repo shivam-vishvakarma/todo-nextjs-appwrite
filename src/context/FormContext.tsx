@@ -20,7 +20,6 @@ export const FormProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     if (isOpen === false) {
       setTodo(undefined);
-      console.log("Form Data", todo);
     }
   }, [isOpen]);
   return (

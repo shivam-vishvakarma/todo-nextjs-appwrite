@@ -7,7 +7,7 @@ export default function NavBar() {
   const pathname = usePathname();
   const { user, logout } = useAuth();
   return (
-    <header className="text-black body-font border-b-2 fixed z-20 top-0 left-0 right-0 backdrop-blur-3xl">
+    <header className="text-black body-font border-b-2 fixed z-20 top-0 left-0 right-0 backdrop-blur-3xl h-20">
       <div className="container mx-auto flex flex-wrap p-5 flex-col md:flex-row items-center justify-between max-w-screen-xl">
         <Link
           href={"/"}

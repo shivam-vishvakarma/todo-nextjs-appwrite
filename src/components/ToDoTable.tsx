@@ -1,7 +1,6 @@
 import { Models } from "appwrite";
 import ToDo from "./ToDo";
 import { ToDoItem } from "@/lib/server/databaseService";
-import { todo } from "node:test";
 
 export default function ToDoTable({
   todos,
@@ -53,7 +52,7 @@ export default function ToDoTable({
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200 dark:divide-gray-700 dark:bg-gray-900">
-          {todos ? todos?.documents.map((todo) => (
+          {todos && todos.documents.length ? todos?.documents.map((todo) => (
             <ToDo key={todo.$id} todo={todo} />
           )) : (
             <tr>

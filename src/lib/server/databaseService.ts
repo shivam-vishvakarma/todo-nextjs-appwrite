@@ -102,9 +102,9 @@ export class Database{
         });
     }
 
-    async getToDoItems(userId: string, status?: "ongoing" | "pending" | "rejected" | "completed" | "missed", page: number = 1, limit: number = 10){
+    async getToDoItems(userId: string, status?: "ongoing" | "pending" | "rejected" | "completed" | "missed" | "all", page: number = 1, limit: number = 10){
         const query = [Query.equal("userId", userId)];
-        if(status){
+        if(status && status !== "all"){
             query.push(Query.equal("status", status));
         }
         if(page && limit){

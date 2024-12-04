@@ -5,9 +5,11 @@ import databaseService, { ToDoItem } from "@/lib/server/databaseService";
 import { useState } from "react";
 import StatusBadge from "./StatusBadge";
 import { useRouter } from "next/navigation";
+import { useAlert } from "@/context/AlertContext";
 
 export default function ToDo({ todo }: { todo: ToDoItem }) {
   const { setIsOpen, setTodo } = useForm();
+  const { callAlert } = useAlert();
   const router = useRouter();
   const setFormOpen = setIsOpen;
   const [open, setOpen] = useState(false);
@@ -17,11 +19,29 @@ export default function ToDo({ todo }: { todo: ToDoItem }) {
   const handleStatusChange = async (status: ToDoItem["status"]) => {
     setLoader(true);
     const res = await databaseService.changeToDoItemStatus(todo.$id, status);
-    if (res){
-        setStatus(res.status);
+    if (res) {
+      setStatus(res.status);
     }
     setLoader(false);
-  }
+  };
+
+  const handleEdit = () => {
+    setTodo(todo);
+    setFormOpen(true);
+    setOpen(false);
+  };
+
+  const handleDelete = async () => {
+    try{
+        const res = await databaseService.deleteToDoItem(todo.$id);
+    if (res) {
+      router.refresh();
+    }
+    } catch (error) {
+        callAlert("Error deleting todo", "error");
+    }
+    setOpen(false);
+  };
 
   return (
     <tr>
@@ -62,19 +82,23 @@ export default function ToDo({ todo }: { todo: ToDoItem }) {
         </div>
       </td>
       <td className="px-12 py-4 text-sm font-medium whitespace-nowrap">
-        <StatusBadge status={status} onChange={handleStatusChange} showLoader={loader}/>
+        <StatusBadge
+          status={status}
+          onChange={handleStatusChange}
+          showLoader={loader}
+        />
       </td>
       <td className="px-4 py-4 text-sm whitespace-nowrap relative">
         {/* this is an overlay div for closing the dropdown */}
         {open && (
           <div
             onClick={() => setOpen(false)}
-            className="fixed h-screen w-screen top-0 left-0"
+            className="fixed h-screen w-screen top-0 left-0 z-10"
           ></div>
         )}
         <button
           onClick={() => setOpen((prev) => !prev)}
-          className="px-1 py-1 text-gray-500 transition-colors duration-200 rounded-lg dark:text-gray-300 hover:bg-gray-100"
+          className="px-1 py-1 text-gray-500 z-0 transition-colors duration-200 rounded-lg dark:text-gray-300 hover:bg-gray-100"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -97,22 +121,15 @@ export default function ToDo({ todo }: { todo: ToDoItem }) {
           } absolute right-10 top-1/2 -translate-y-1/2 z-20 mt-2 overflow-hidden bg-white rounded-lg shadow-xl dark:bg-gray-800 border`}
         >
           <button
-            onClick={() => {
-              setTodo(todo);
-              setFormOpen(true);
-              setOpen(false);
-            }}
+            onClick={handleEdit}
             className="block px-4 py-2 text-sm text-blue-500 transition-colors duration-300 transform border-b dark:text-gray-200 dark:border-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700"
           >
             Edit
           </button>
-          <button className="block px-4 py-2 text-sm text-green-500 transition-colors duration-300 transform border-b dark:text-gray-200 dark:border-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700">
-            Mark Completed
-          </button>
-          <button className="block px-4 py-2 text-sm text-black transition-colors duration-300 transform border-b dark:text-gray-200 dark:border-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700">
-            Mark Incomplete
-          </button>
-          <button className="block px-4 py-2 text-sm text-red-500 transition-colors duration-300 transform dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
+          <button
+            onClick={handleDelete}
+            className="block px-4 py-2 text-sm text-red-500 transition-colors duration-300 transform dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+          >
             Delete
           </button>
         </div>

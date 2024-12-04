@@ -4,8 +4,7 @@ import { useAlert } from "@/context/AlertContext";
 import { useAuth } from "@/context/AuthContext";
 import { useForm } from "@/context/FormContext";
 import databaseService from "@/lib/server/databaseService";
-import { useRouter } from "next/navigation";
-import { TextareaHTMLAttributes, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 type FormData = {
   title: string;
@@ -14,10 +13,9 @@ type FormData = {
 };
 
 export default function ToDoForm() {
-  const { isOpen, setIsOpen, todo, setTodo } = useForm();
+  const { isOpen, setIsOpen, todo } = useForm();
   const { user } = useAuth();
   const { callAlert } = useAlert();
-  const router = useRouter();
 
   const [formData, setFormData] = useState<FormData>({
     title: "",
@@ -34,18 +32,33 @@ export default function ToDoForm() {
       ...formData,
       [e.target.name]: e.target.value,
     });
-    console.log("Form Data", formData);
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
+      if (todo?.$id) {
+        const res = await databaseService.updateToDoItem(
+          todo.$id,
+          formData.title,
+          formData.description,
+          formData.deadline
+        );
+        if (res) {
+          callAlert("To Do Updated Successfully", "success");
+          setFormData({
+            title: "",
+            deadline: "",
+            description: "",
+          });
+          setIsOpen(false);
+          return;
+        }
+      }
       if (!user?.$id) {
         callAlert("User not found", "error");
         return;
       }
-      console.log("User", user);
-
       const res = await databaseService.createToDoItem(
         user?.$id,
         formData.title,
@@ -73,7 +86,6 @@ export default function ToDoForm() {
         deadline: todo.deadline,
         description: todo.description,
       });
-      console.log("Todo", todo);
     }
   }, [todo]);
 
