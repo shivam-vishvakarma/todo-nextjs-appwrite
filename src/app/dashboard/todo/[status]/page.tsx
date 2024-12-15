@@ -31,7 +31,7 @@ export default function ToDoStatus({
         });
       });
     }
-  }, [user, page]);
+  }, [user, page, params]);
 
   if (showLoader) {
     return <Loader />;

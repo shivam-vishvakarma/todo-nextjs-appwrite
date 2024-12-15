@@ -2,11 +2,11 @@
 
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function Register() {
   const router = useRouter();
-  const { signup, login, user, loading } = useAuth();
+  const { signup, user, loading } = useAuth();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -27,7 +27,7 @@ export default function Register() {
 
   useEffect(() => {
     if (user && !loading) router.push("/dashboard/profile");
-  }, [user]);
+  }, [user, loading, router]);
 
   return (
     <main className="h-screen grid place-items-center">

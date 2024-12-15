@@ -13,7 +13,7 @@ export default function Home() {
     if (user && !loading) {
       router.push("/dashboard");
     }
-  }, [user]);
+  }, [user, loading, router]);
   return (
     <main>
       <section className="text-gray-600 body-font max-w-screen-xl mx-auto md:pt-24">

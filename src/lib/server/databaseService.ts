@@ -51,7 +51,7 @@ export class Database{
     }
 
     async getUserProfile(user: string){
-        let userDoc = await this.getUser(user);
+        const userDoc = await this.getUser(user);
         if(!userDoc){
             const user = await authService.getUser();
             this.createUser(user.$id);
@@ -75,14 +75,14 @@ export class Database{
     }
 
     async updateCoverPhoto(user: string, coverPhoto: File){
-        const fileId = await storageService.uploadFile(coverPhoto, user);
+        const fileId = await storageService.uploadFile(coverPhoto);
         return await this.database.updateDocument(this.databaseId, this.userCollectionId, user, {
             coverPic: fileId.$id,
         })
     }
 
     async updateProfilePhoto(user: string, profilePhoto: File){
-        const fileId = await storageService.uploadFile(profilePhoto, user);
+        const fileId = await storageService.uploadFile(profilePhoto);
         return await this.database.updateDocument(this.databaseId, this.userCollectionId, user, {
             profilePic: fileId.$id,
         })
@@ -137,4 +137,6 @@ export class Database{
     }
 }
 
-export default new Database();
+const databaseService = new Database();
+
+export default databaseService;

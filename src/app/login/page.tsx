@@ -25,7 +25,7 @@ export default function Login() {
   };
   useEffect(() => {
     if (user && !loading) router.push("/dashboard");
-  }, [user]);
+  }, [user, loading, router]);
   return (
     <main className="h-screen grid place-items-center">
       <section className="max-w-md w-1/2 p-6 mx-auto bg-white rounded-md shadow-md dark:bg-gray-800">

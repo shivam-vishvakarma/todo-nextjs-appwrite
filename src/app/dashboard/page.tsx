@@ -34,7 +34,7 @@ export default function AllToDo() {
         setShowLoader(false);
       });
     }
-  }, [user, page]);
+  }, [user, page, limit, searchParams, setIsOpen]);
 
   if (showLoader) {
     return <Loader />;

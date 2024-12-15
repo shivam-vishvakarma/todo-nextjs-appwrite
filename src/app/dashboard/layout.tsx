@@ -1,9 +1,10 @@
 "use client";
 
 import DashboardNav from "@/components/DashboardNav";
+import Loader from "@/components/Loader";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -12,7 +13,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     if (!user && !loading) {
       router.push("/login");
     }
-  }, [user, loading]);
+  }, [user, loading, router]);
   return (
     <main className="w-full">
       <section className="max-w-screen-xl mx-auto pt-20 flex flex-col gap-4">
@@ -23,7 +24,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <div className="sticky top-20 z-10">
             <DashboardNav />
           </div>
-          <div>{children}</div>
+          <div>
+            <Suspense fallback={<Loader />}>{children}</Suspense>
+          </div>
         </section>
       </section>
     </main>

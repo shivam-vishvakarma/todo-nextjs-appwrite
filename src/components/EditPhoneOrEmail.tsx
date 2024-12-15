@@ -1,5 +1,4 @@
 import { useAlert } from "@/context/AlertContext";
-import { useAuth } from "@/context/AuthContext";
 import authService from "@/lib/server/authService";
 import { useEffect, useState } from "react";
 
@@ -10,7 +9,6 @@ export default function EditPhoneOrEmail({
   edit: "phone" | "email" | null;
   setClose: (value: "phone" | "email" | null) => void;
 }) {
-  const { user } = useAuth();
   const { callAlert } = useAlert();
   const [form, setForm] = useState({ password: "", phone: "", email: "" });
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {

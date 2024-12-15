@@ -32,13 +32,13 @@ export default function ToDo({ todo }: { todo: ToDoItem }) {
   };
 
   const handleDelete = async () => {
-    try{
-        const res = await databaseService.deleteToDoItem(todo.$id);
-    if (res) {
-      router.refresh();
-    }
+    try {
+      const res = await databaseService.deleteToDoItem(todo.$id);
+      if (res) {
+        router.refresh();
+      }
     } catch (error) {
-        callAlert("Error deleting todo", "error");
+      callAlert("Error deleting todo " + error, "error");
     }
     setOpen(false);
   };
